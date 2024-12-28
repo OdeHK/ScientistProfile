@@ -1,0 +1,66 @@
+/* Đặt chiều cao sidebar full màn hình */
+.sidebar {
+    height: 100vh;
+    overflow-y: auto;
+}
+
+.sidebar .nav-link:hover {
+    background-color: #7db0e2c6;
+    border-radius: 4px;
+}
+
+section {
+    padding-top: 80px;
+}
+
+.full-screen-section {
+    height: 100vh;  /* Chiều cao tối thiểu là chiều cao cửa sổ */
+    display: flex;
+    position: relative;
+    /* justify-content: center;
+    align-items: center;
+    text-align: center; */
+}
+
+.fixed-hr {
+    position: absolute; /* Cố định vị trí của <hr> */
+    bottom: 0; /* Đặt nó ở cuối section */
+    width: 150vh;
+    border: none;
+    border-top: 2px solid #000; /* Đường kẻ màu đen */
+    margin: 0;
+}
+
+.fixed-modal {
+    width: 900px; /* Chiều rộng cố định */
+    height: 600px; /* Chiều cao cố định */
+    max-width: 100%;
+    max-height: 100%;
+    overflow-y: auto; /* Thêm thanh cuộn nếu nội dung dài hơn */
+    margin: auto;
+}
+
+.modal{
+    --bs-modal-width: 900px;
+    --bs-modal-header-padding-x: 0;
+}
+
+/* Style cho các mục con */
+.sidebar .collapse ul {
+    margin-top: 5px;
+}
+
+.sidebar .nav-link {
+    padding: 8px 16px;
+    transition: background-color 0.2s;
+}
+
+.sidebar .collapse .nav-link {
+    padding-left: 32px; /* Tăng thụt lề cho mục con */
+}
+
+.w-5.h-5{
+    width: 15px;
+}
+
+
