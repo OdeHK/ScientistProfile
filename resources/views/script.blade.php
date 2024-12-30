@@ -518,3 +518,254 @@
         });
     });
 </script>
+
+<script>
+    function deleteItem(type, id) {
+        if (confirm('Bạn có chắc chắn muốn xóa mục này?')) {
+            fetch(`/delete/${type}/${id}`, {
+                method: 'DELETE',
+                headers: {
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                }
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.message) {
+                        alert(data.message);
+                        // Xóa dòng khỏi bảng
+                        location.reload();
+                    }
+                })
+                .catch(error => console.error('Error:', error));
+        }
+    }
+</script>
+
+<!-- <script>
+    $(document).ready(function () {
+        $('#editGeneralBtn').on('click', function () {
+            const inputFields = [
+                "person_address",
+                "person_hometown",
+                "person_ethnicity",
+                "person_degree",
+                "person_degree_year_award",
+                "person_degree_country_award",
+                "person_sci_title",
+                "person_year_appointment",
+                "person_position",
+                "person_work_unit",
+                "person_office_phone",
+                "person_home_phone",
+                "person_mobile_phone",
+                "person_fax",
+                "person_citizen_id",
+                "person_date_issue",
+                "person_place_issue"
+            ];
+            // Bỏ thuộc tính disabled cho các trường input
+            inputFields.forEach(field => {
+                $(`input[name="${field}"]`).prop('disabled', false);
+            });
+
+            // Hiển thị nút Save, ẩn nút Edit
+            $(this).hide();
+            $('#save-btn').show();
+            location.reload();
+        });
+
+        $('#save-btn').on('click', function () {
+            // Thu thập dữ liệu từ các trường input
+            // Thu thập dữ liệu từ các trường input đã được chỉnh sửa
+            const formData = {};
+
+            inputFields.forEach(field => {
+                formData[field] = $(`input[name="${field}"]`).val();
+            });
+
+            $.ajax({
+                url: route('scientist.updateGeneralInfo'),  // Đường dẫn đến controller backend
+                method: 'PUT',  // Phương thức PUT
+                data: formData,  // Dữ liệu gửi đi
+                headers: {
+                    'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')  // Đảm bảo gửi token CSRF
+                },
+                success: function (response) {
+                    if (response.success) {
+                        alert('Cập nhật thông tin thành công!');
+                        // Sau khi thành công, reload lại phần dữ liệu đã được chỉnh sửa
+                        location.reload();
+                    } else {
+                        alert('Cập nhật thất bại!');
+                    }
+                },
+                error: function (xhr, status, error) {
+                    alert('Đã có lỗi xảy ra! Vui lòng thử lại sau.');
+                }
+            });
+        });
+    });
+
+</script> -->
+
+<script>
+    $(document).ready(function () {
+        let initialData = {};  // Lưu trữ dữ liệu ban đầu
+
+        // Bật chỉnh sửa khi bấm nút Edit
+        $('#editGeneralBtn').click(function () {
+            const inputFields = [
+                "person_address",
+                "person_hometown",
+                "person_ethnicity",
+                "person_degree",
+                "person_degree_year_award",
+                "person_degree_country_award",
+                "person_sci_title",
+                "person_year_appointment",
+                "person_position",
+                "person_work_unit",
+                "person_office_phone",
+                "person_home_phone",
+                "person_mobile_phone",
+                "person_fax",
+                "person_citizen_id",
+                "person_date_issue",
+                "person_place_issue"
+            ];
+            // Bỏ thuộc tính disabled cho các trường input
+            inputFields.forEach(field => {
+                $(`input[name="${field}"]`).prop('disabled', false);
+            });
+
+            // Lưu trữ dữ liệu ban đầu
+            inputFields.forEach(field => {
+                initialData[field] = $(`input[name="${field}"]`).val();
+            });
+
+
+            // Hiển thị nút Save và ẩn nút Edit
+            $('#editGeneralBtn').hide();
+            $('#save-btn').show();
+        });
+
+        // Xử lý khi bấm nút Save
+        $('#save-btn').click(function () {
+            const inputFields = [
+                "person_address",
+                "person_hometown",
+                "person_ethnicity",
+                "person_degree",
+                "person_degree_year_award",
+                "person_degree_country_award",
+                "person_sci_title",
+                "person_year_appointment",
+                "person_position",
+                "person_work_unit",
+                "person_office_phone",
+                "person_home_phone",
+                "person_mobile_phone",
+                "person_fax",
+                "person_citizen_id",
+                "person_date_issue",
+                "person_place_issue"
+            ];
+
+            // Thu thập dữ liệu đã thay đổi
+            const formData = {};
+
+            inputFields.forEach(field => {
+                const newValue = $(`input[name="${field}"]`).val();
+                // Nếu giá trị thay đổi, lưu giá trị mới, nếu không thay đổi, giữ giá trị ban đầu
+                formData[field] = newValue !== initialData[field] ? newValue : initialData[field];
+            });
+
+            // Gửi yêu cầu AJAX để cập nhật dữ liệu
+            $.ajax({
+                url: '{{route('scientist.updateGeneralInfo')}}',
+                method: 'PUT',  // Phương thức PUT
+                data: formData,  // Dữ liệu gửi đi
+                headers: {
+                    'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')  // Đảm bảo gửi token CSRF
+                },
+                success: function (response) {
+                    if (response.success) {
+                        alert('Cập nhật thông tin thành công!');
+                        // Sau khi thành công, reload lại phần dữ liệu đã được chỉnh sửa
+                        location.reload();
+                    } else {
+                        alert('Cập nhật thất bại!');
+                    }
+                },
+                error: function (xhr, status, error) {
+                    alert('Đã có lỗi xảy ra! Vui lòng thử lại sau.');
+                }
+            });
+        });
+    });
+</script>
+
+<!-- <script>
+    $(document).ready(function () {
+        // Khi bấm nút Chỉnh sửa
+        $('#workExpTable').on('click', '.edit-btn', function () {
+            const row = $(this).closest('tr');
+            const workExpId = row.data('id');
+
+            // Lấy thông tin của các trường "position" và "end_date" và cho phép chỉnh sửa
+            const positionCell = row.find('.position');
+            const positionValue = positionCell.text();
+            const endDateCell = row.find('.end_date');
+            const endDateValue = endDateCell.val();
+
+            // Chuyển ô "position" và "end_date" thành input để chỉnh sửa
+            positionCell.html(`<input type="text" name="position" value="${positionValue}">`);
+            endDateCell.html(`<input type="date" name="end_date" value="${endDateValue}">`);
+
+            // Thay đổi nút Chỉnh sửa thành Save
+            $(this).text('Lưu');
+            $(this).removeClass('edit-btn').addClass('save-btn');
+        });
+
+        // Khi bấm nút Lưu
+        $('#workExpTable').on('click', '.save-btn', function () {
+            const row = $(this).closest('tr');
+            const workExpId = row.data('id');
+            const formData = {};
+
+            // Lấy dữ liệu đã chỉnh sửa
+            row.find('.editable input').each(function () {
+                const field = $(this).attr('name');
+                const value = $(this).val();
+                formData[field] = value;
+            });
+
+            // Gửi yêu cầu AJAX để cập nhật dữ liệu
+            $.ajax({
+                url: `/scientist/work-exp/${workExpId}`,  // Cập nhật đường dẫn
+                method: 'PUT',
+                data: formData,
+                headers: {
+                    'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                },
+                success: function (response) {
+                    if (response.success) {
+                        // Cập nhật lại dữ liệu trong bảng
+                        row.find('.editable').each(function () {
+                            const field = $(this).data('field');
+                            const newValue = formData[field];
+                            $(this).text(newValue);
+                        });
+                        $(this).text('Chỉnh sửa');
+                        $(this).removeClass('save-btn').addClass('edit-btn');
+                    } else {
+                        alert('Cập nhật thất bại!');
+                    }
+                },
+                error: function () {
+                    alert('Có lỗi xảy ra!');
+                }
+            });
+        });
+    });
+</script> -->

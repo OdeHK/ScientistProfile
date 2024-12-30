@@ -4,6 +4,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+
     <title>Scientist Profile</title>
     @include('style')
 </head>
@@ -26,24 +28,6 @@
                         </li>
                         <li class="nav-item">
                             <a class="nav-link text-dark" href="#education">Quá trình đào tạo</a>
-                            <!-- <a class="nav-link text-dark" href="#education" data-bs-toggle="collapse"
-                                data-bs-target="#educationSubmenu" aria-expanded="false"
-                                aria-controls="educationSubmenu">
-                                Quá trình đào tạo
-                                <span class="ms-2"><i class="bi bi-chevron-down"></i></span>
-                            </a> -->
-
-                            <!-- <ul class="collapse list-unstyled ps-4" id="educationSubmenu">
-                                <li class="nav-item">
-                                    <a class="nav-link text-dark" href="#undergraduate">Đại học</a>
-                                </li>
-                                <li class="nav-item">
-                                    <a class="nav-link text-dark" href="#postgraduate">Sau đại học</a>
-                                </li>
-                                <li class="nav-item">
-                                    <a class="nav-link text-dark" href="#language">Ngoại ngữ</a>
-                                </li>
-                            </ul> -->
                         </li>
                         <li class="nav-item">
                             <a class="nav-link text-dark" href="#work_exp">Quá trình công tác</a>
@@ -60,6 +44,7 @@
                         <li class="nav-item">
                             <a class="nav-link text-dark" href="#award">Giải thưởng</a>
                         </li>
+                        <hr>
                         <li class="nav-item">
                             <a class="nav-link text-dark"
                                 href="{{route('scientist.export', ['id' => $scientist->id])}}">Export your CV</a>
@@ -83,170 +68,190 @@
 
                 <section id="general" class="full-screen-section">
                     <div class="container">
-                        <h1>Thông tin cơ bản</h1>
-                        <div class="form-group mt-3">
-                            <div class="row mb-3">
+                        <form id="editGeneral">
+                            @csrf
+                            @method('PUT')
+                            <div class="row">
                                 <div class="col">
-                                    <div class="input-group">
-                                        <span class="input-group-text">Họ và tên:</span>
-                                        <input type="text" name="person_name" class="form-control"
-                                            value="{{$scientist->name}}" placeholder="Name">
-                                    </div>
+                                    <h1>Thông tin cơ bản</h1>
                                 </div>
-                                <div class="col">
-                                    <div class="input-group">
-                                        <span class="input-group-text">Giới tính:</span>
-                                        <input type="text" name="person_gender" class="form-control"
-                                            value="{{$scientist->gender == 0 ? 'Nam' : 'Nữ'}}" placeholder="Gender">
-                                    </div>
+                                <div class="col-sm-4 justify-content-center d-flex align-items-center">
+                                    <button type="button" class="btn btn-warning" id="editGeneralBtn">Edit 
+                                        <i class="bi bi-pencil-square"></i></button>
+                                    <button id="save-btn" class="btn btn-primary" style="display: none;">Save</button>
                                 </div>
                             </div>
+                            <div class="form-group mt-3">
+                                <div class="row mb-3">
+                                    <div class="col">
+                                        <div class="input-group">
+                                            <span class="input-group-text">Họ và tên:</span>
+                                            <input type="text" name="person_name" class="form-control"
+                                                value="{{$scientist->name}}" placeholder="Name" disabled>
+                                        </div>
+                                    </div>
+                                    <div class="col">
+                                        <div class="input-group">
+                                            <span class="input-group-text">Giới tính:</span>
+                                            <input type="text" name="person_gender" class="form-control"
+                                                value="{{$scientist->gender == 0 ? 'Nam' : 'Nữ'}}" placeholder="Gender"
+                                                disabled>
+                                        </div>
+                                    </div>
+                                </div>
 
-                            <div class="row mb-3">
-                                <div class="col">
-                                    <div class="input-group">
-                                        <span class="input-group-text">Ngày, tháng, năm sinh:</span>
-                                        <input type="text" name="person_dob" class="form-control"
-                                            value="{{$scientist->date_of_birth}}" placeholder="Date of birth">
+                                <div class="row mb-3">
+                                    <div class="col">
+                                        <div class="input-group">
+                                            <span class="input-group-text">Ngày, tháng, năm sinh:</span>
+                                            <input type="text" name="person_dob" class="form-control"
+                                                value="{{\Carbon\Carbon::parse($scientist->date_of_birth)->format('d/m/Y')}}"
+                                                placeholder="Date of birth" disabled>
+                                        </div>
+                                    </div>
+                                    <div class="col">
+                                        <div class="input-group">
+                                            <span class="input-group-text">Nơi sinh:</span>
+                                            <input type="text" name="person_pob" class="form-control"
+                                                value="{{$scientist->place_of_birth}}" placeholder="Place of birth"
+                                                disabled>
+                                        </div>
                                     </div>
                                 </div>
-                                <div class="col">
-                                    <div class="input-group">
-                                        <span class="input-group-text">Nơi sinh:</span>
-                                        <input type="text" name="person_pob" class="form-control"
-                                            value="{{$scientist->place_of_birth}}" placeholder="Place of birth">
-                                    </div>
-                                </div>
-                            </div>
 
-                            <div class="row mb-3">
-                                <div class="col">
-                                    <div class="input-group">
-                                        <span class="input-group-text">Quê quán:</span>
-                                        <input type="text" name="person_hometown" class="form-control"
-                                            value="{{$scientist->hometown}}" placeholder="Hometown">
+                                <div class="row mb-3">
+                                    <div class="col">
+                                        <div class="input-group">
+                                            <span class="input-group-text">Quê quán:</span>
+                                            <input type="text" name="person_hometown" class="form-control"
+                                                value="{{$scientist->hometown}}" placeholder="Hometown" disabled>
+                                        </div>
+                                    </div>
+                                    <div class="col">
+                                        <div class="input-group">
+                                            <span class="input-group-text">Dân tộc:</span>
+                                            <input type="text" name="person_ethnicity" class="form-control"
+                                                value="{{$scientist->ethnicity}}" placeholder="Ethnicity" disabled>
+                                        </div>
                                     </div>
                                 </div>
-                                <div class="col">
+
+                                <div class="row mb-3">
+                                    <div class="col">
+                                        <div class="input-group">
+                                            <span class="input-group-text">Học vị cao nhất:</span>
+                                            <input type="text" name="person_degree" class="form-control"
+                                                value="{{$scientist->highest_degree}}"
+                                                placeholder="Highest academic degree" disabled>
+                                        </div>
+                                    </div>
+                                    <div class="col">
+                                        <div class="input-group">
+                                            <span class="input-group-text">Năm, nước nhận học vị:</span>
+                                            <input type="text" name="person_degree_year_award" class="form-control"
+                                                value="{{$scientist->year_awarded_degree}}"
+                                                placeholder="Year and Country of degree award" disabled>
+                                            <input type="text" name="person_degree_country_award" class="form-control"
+                                                value="{{$scientist->country_awarded_degree}}"
+                                                placeholder="Year and Country of degree award" disabled>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="row mb-3">
+                                    <div class="col">
+                                        <div class="input-group">
+                                            <span class="input-group-text">Chức danh khoa học cao nhất:</span>
+                                            <input type="text" name="person_sci_title" class="form-control"
+                                                value="{{$scientist->scientific_title}}"
+                                                placeholder="Highest scientific title" disabled>
+                                        </div>
+                                    </div>
+                                    <div class="col">
+                                        <div class="input-group">
+                                            <span class="input-group-text">Năm bổ nhiệm:</span>
+                                            <input type="text" name="person_year_appointment" class="form-control"
+                                                value="{{$scientist->year_title_appointment}}"
+                                                placeholder="Year of appointment" disabled>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="row mb-3">
                                     <div class="input-group">
-                                        <span class="input-group-text">Dân tộc:</span>
-                                        <input type="text" name="person_ethnicity" class="form-control"
-                                            value="{{$scientist->ethnicity}}" placeholder="Ethnicity">
+                                        <span class="input-group-text">Chức vụ (Hiện tại hoặc trước khi nghỉ
+                                            hưu):</span>
+                                        <input type="text" name="person_position" class="form-control"
+                                            value="{{$scientist->position}}"
+                                            placeholder="Position (current or before retirement)" disabled>
+                                    </div>
+                                </div>
+
+                                <div class="row mb-3">
+                                    <div class="input-group">
+                                        <span class="input-group-text">Đơn vị công tác (Hiện tại hoặc trước khi nghỉ
+                                            hưu):</span>
+                                        <input type="text" name="person_work_unit" class="form-control"
+                                            value="{{$scientist->workplace}}"
+                                            placeholder="Work unit (current or before retirement)" disabled>
+                                    </div>
+                                </div>
+
+                                <div class="row mb-3">
+                                    <div class="input-group">
+                                        <span class="input-group-text">Chỗ ở riêng hoặc địa chỉ liên lạc:</span>
+                                        <input type="text" name="person_address" class="form-control"
+                                            value="{{$scientist->address}}" placeholder="Address" disabled>
+                                    </div>
+                                </div>
+
+                                <div class="row mb-3">
+                                    <div class="input-group">
+                                        <span class="input-group-text">Điện thoại liên hệ:</span>
+                                        <span class="input-group-text">CQ:</span>
+                                        <input type="text" name="person_office_phone" class="form-control"
+                                            value="{{$scientist->phone_office}}" placeholder="Office Phone" disabled>
+                                        <span class="input-group-text">NR:</span>
+                                        <input type="text" name="person_home_phone" class="form-control"
+                                            value="{{$scientist->phone_home}}" placeholder="Home Phone" disabled>
+                                        <span class="input-group-text">DĐ:</span>
+                                        <input type="text" name="person_mobile_phone" class="form-control"
+                                            value="{{$scientist->phone_mobile}}" placeholder="Mobile Phone" disabled>
+                                    </div>
+                                </div>
+
+                                <div class="row mb-3">
+                                    <div class="col">
+                                        <div class="input-group">
+                                            <span class="input-group-text">Fax:</span>
+                                            <input type="text" name="person_fax" class="form-control"
+                                                value="{{$scientist->fax}}" placeholder="Fax" disabled>
+                                        </div>
+                                    </div>
+                                    <div class="col">
+                                        <div class="input-group">
+                                            <span class="input-group-text">Email:</span>
+                                            <input type="text" name="person_email" class="form-control"
+                                                value="{{$user->email}}" placeholder="Email" disabled>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="row mb-3">
+                                    <div class="input-group">
+                                        <span class="input-group-text">CCCD:</span>
+                                        <input type="text" name="person_citizen_id" class="form-control"
+                                            value="{{$scientist->citizen_id}}" placeholder="Citizen ID number" disabled>
+                                        <span class="input-group-text">Ngày cấp:</span>
+                                        <input type="text" name="person_date_issue" class="form-control"
+                                            value="{{$scientist->date_issue}}" placeholder="Date of issue" disabled>
+                                        <span class="input-group-text">Nơi cấp:</span>
+                                        <input type="text" name="person_place_issue" class="form-control"
+                                            value="{{$scientist->place_issue}}" placeholder="Place of issue" disabled>
                                     </div>
                                 </div>
                             </div>
-
-                            <div class="row mb-3">
-                                <div class="col">
-                                    <div class="input-group">
-                                        <span class="input-group-text">Học vị cao nhất:</span>
-                                        <input type="text" name="person_degree" class="form-control"
-                                            value="{{$scientist->highest_degree}}"
-                                            placeholder="Highest academic degree">
-                                    </div>
-                                </div>
-                                <div class="col">
-                                    <div class="input-group">
-                                        <span class="input-group-text">Năm, nước nhận học vị:</span>
-                                        <input type="text" name="person_degree_award" class="form-control"
-                                            value="{{$scientist->year_awarded_degree}}, {{$scientist->country_awarded_degree}}"
-                                            placeholder="Year and Country of degree award">
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="row mb-3">
-                                <div class="col">
-                                    <div class="input-group">
-                                        <span class="input-group-text">Chức danh khoa học cao nhất:</span>
-                                        <input type="text" name="person_sci_title" class="form-control"
-                                            value="{{$scientist->scientific_title}}"
-                                            placeholder="Highest scientific title">
-                                    </div>
-                                </div>
-                                <div class="col">
-                                    <div class="input-group">
-                                        <span class="input-group-text">Năm bổ nhiệm:</span>
-                                        <input type="text" name="person_year_appointment" class="form-control"
-                                            value="{{$scientist->year_title_appointment}}"
-                                            placeholder="Year of appointment">
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="row mb-3">
-                                <div class="input-group">
-                                    <span class="input-group-text">Chức vụ (Hiện tại hoặc trước khi nghỉ hưu):</span>
-                                    <input type="text" name="person_position" class="form-control"
-                                        value="{{$scientist->position}}"
-                                        placeholder="Position (current or before retirement)">
-                                </div>
-                            </div>
-
-                            <div class="row mb-3">
-                                <div class="input-group">
-                                    <span class="input-group-text">Đơn vị công tác (Hiện tại hoặc trước khi nghỉ
-                                        hưu):</span>
-                                    <input type="text" name="person_work_unit" class="form-control"
-                                        value="{{$scientist->workplace}}"
-                                        placeholder="Work unit (current or before retirement)">
-                                </div>
-                            </div>
-
-                            <div class="row mb-3">
-                                <div class="input-group">
-                                    <span class="input-group-text">Chỗ ở riêng hoặc địa chỉ liên lạc:</span>
-                                    <input type="text" name="person_address" class="form-control"
-                                        value="{{$scientist->address}}" placeholder="Address">
-                                </div>
-                            </div>
-
-                            <div class="row mb-3">
-                                <div class="input-group">
-                                    <span class="input-group-text">Điện thoại liên hệ:</span>
-                                    <span class="input-group-text">CQ:</span>
-                                    <input type="text" name="person_office_phone" class="form-control"
-                                        value="{{$scientist->phone_office}}" placeholder="Office Phone">
-                                    <span class="input-group-text">NR:</span>
-                                    <input type="text" name="person_home_phone" class="form-control"
-                                        value="{{$scientist->phone_home}}" placeholder="Home Phone">
-                                    <span class="input-group-text">DĐ:</span>
-                                    <input type="text" name="person_mobile_phone" class="form-control"
-                                        value="{{$scientist->phone_mobile}}" placeholder="Mobile Phone">
-                                </div>
-                            </div>
-
-                            <div class="row mb-3">
-                                <div class="col">
-                                    <div class="input-group">
-                                        <span class="input-group-text">Fax:</span>
-                                        <input type="text" name="person_fax" class="form-control"
-                                            value="{{$scientist->fax}}" placeholder="Fax">
-                                    </div>
-                                </div>
-                                <div class="col">
-                                    <div class="input-group">
-                                        <span class="input-group-text">Email:</span>
-                                        <input type="text" name="person_email" class="form-control"
-                                            value="{{$user->email}}" placeholder="Email">
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="row mb-3">
-                                <div class="input-group">
-                                    <span class="input-group-text">CCCD:</span>
-                                    <input type="text" name="person_citizen_id" class="form-control"
-                                        value="{{$scientist->citizen_id}}" placeholder="Citizen ID number">
-                                    <span class="input-group-text">Ngày cấp:</span>
-                                    <input type="text" name="person_date_issue" class="form-control"
-                                        value="{{$scientist->date_issue}}" placeholder="Date of issue">
-                                    <span class="input-group-text">Nơi cấp:</span>
-                                    <input type="text" name="person_place_issue" class="form-control"
-                                        value="{{$scientist->place_issue}}" placeholder="Place of issue">
-                                </div>
-                            </div>
-                        </div>
+                        </form>
                     </div>
                     <hr class="fixed-hr">
                 </section>
@@ -271,20 +276,23 @@
                         <div class="content-body">
                             <table class="table table-hover">
                                 <thead>
-                                    <tr>
+                                    <tr class="text-center">
                                         <th>Bậc học</th>
                                         <th>Nơi đào tạo</th>
                                         <th>Ngành/Chuyên ngành</th>
                                         <th>Chi tiết</th>
+                                        <th>&nbsp;</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     @if (isset($educations))
                                         @foreach ($educations as $education)
                                             <tr>
-                                                <td>{{ $education->type == 'undergraduate' ? 'Đại học' : 'Sau đại học' }}</td>
-                                                <td>{{ $education->institution }}</td>
-                                                <td>{{ $education->field_of_study }}</td>
+                                                <td class="text-center">
+                                                    {{ $education->type == 'undergraduate' ? 'Đại học' : 'Sau đại học' }}
+                                                </td>
+                                                <td class="text-center">{{ $education->institution }}</td>
+                                                <td class="text-center">{{ $education->field_of_study }}</td>
                                                 <td>
                                                     @if ($education->type === 'undergraduate')
                                                         Hệ đào tạo: {{ $education->undergraduate->first()->training_system }} <br>
@@ -295,6 +303,12 @@
                                                         Graduation Year: {{$education->postgraduate->first()->graduation_year}} <br>
                                                         Thesis: {{ $education->postgraduate->first()->thesis_title }}
                                                     @endif
+                                                <td>
+                                                    <button class="btn btn-outline-danger"
+                                                        onclick="deleteItem('education',{{ $education->id }})">
+                                                        <i class="bi bi-trash"></i>
+                                                    </button>
+                                                </td>
                                             </tr>
                                         @endforeach
                                     @endif
@@ -327,24 +341,34 @@
                         </div>
 
                         <div class="content-body">
-                            <table class="table table-hover">
+                            <table class="table table-hover" id="workExpTable">
                                 <thead class="text-center align-middle">
                                     <tr>
                                         <th>Từ</th>
                                         <th>Đến</th>
                                         <th>Đơn vị công tác</th>
                                         <th>Công việc đảm nhiệm</th>
+                                        <th>&nbsp;</th>
                                     </tr>
                                 </thead>
                                 <tbody class="align-middle">
                                     @if (isset($workExps))
                                         @foreach ($workExps as $exp)
-                                            <tr class="text-center">
+                                            <tr class="text-center" data-id="{{$exp->id}}">
                                                 <td>{{\Carbon\Carbon::parse($exp['start_date'])->format('d/m/Y')}}</td>
-                                                <td>{{$exp['end_date'] ? \Carbon\Carbon::parse($exp['end_date'])->format('d/m/Y') : 'Now'}}
-                                                </td>
+                                                <td class="editable end_date" data-field="end_date">{{$exp['end_date'] ? \Carbon\Carbon::parse($exp['end_date'])->format('d/m/Y') : 'Now'}}
+                                                </td class="editable">
                                                 <td>{{$exp['institution']}}</td>
-                                                <td>{{$exp['position']}}</td>
+                                                <td class="editable position" data-field="position">{{$exp['position']}}</td>
+                                                <td>
+                                                    <button class="btn btn-outline-danger"
+                                                        onclick="deleteItem('workExp',{{ $exp->id }})">
+                                                        <i class="bi bi-trash"></i>
+                                                    </button>
+
+                                                    <!-- <button class="btn btn-outline-warning edit-btn"><i class="bi bi-pencil-square"></i></button> -->
+
+                                                </td>
                                             </tr>
                                         @endforeach
                                     @endif
@@ -418,6 +442,7 @@
                                     <th>Năm nghiệm thu</th>
                                     <th>Đề tài cấp (NN, Bộ, ngành, trường)</th>
                                     <th>Chức vụ</th>
+                                    <th>&nbsp;</th>
                                 </tr>
                             </thead>
                             <tbody class="align-middle">
@@ -430,6 +455,12 @@
                                             <td>{{$project->end_year}}</td>
                                             <td>{{$project->level}}</td>
                                             <td>{{$project->position}}</td>
+                                            <td>
+                                                <button class="btn btn-outline-danger"
+                                                    onclick="deleteItem('project',{{ $project->id }})">
+                                                    <i class="bi bi-trash"></i>
+                                                </button>
+                                            </td>
                                         </tr>
                                     @endforeach
                                 @endif
@@ -466,6 +497,7 @@
                                         <th>Năm công bố</th>
                                         <th>ISSN</th>
                                         <th>Tên tạp chí</th>
+                                        <th>&nbsp;</th>
                                     </tr>
                                 </thead>
                                 <tbody class="align-middle">
@@ -488,6 +520,12 @@
                                                 <td class="text-center">{{$paper['publication_date']}}</td>
                                                 <td class="text-center">{{$paper['issn']}}</td>
                                                 <td>{{$paper['publisher']}}</td>
+                                                <td>
+                                                    <button class="btn btn-outline-danger"
+                                                        onclick="deleteItem('publishedPapers',{{ $paper->id }})">
+                                                        <i class="bi bi-trash"></i>
+                                                    </button>
+                                                </td>
                                             </tr>
                                         @endforeach
                                     @endif
@@ -815,6 +853,7 @@
                     </div>
                 </div>
             </div>
+
         </div>
     </div>
 

@@ -43,6 +43,13 @@ Route::middleware('user.authenticated')->group(function () {
     // Export CV route
     Route::get('/scientist/export/{id}', [ScientistController::class, 'exportCV'])->name('scientist.export');
 
+    // Delete item
+    Route::delete('/delete/{type}/{id}', [ScientistController::class, 'deleteItem'])->name('scientist.delete_item');
+
     // Logout
     Route::get('/Logout', [AuthController::class, 'logout'])->name('user.logout');
+
+    // Update general info 
+    Route::put('/scientist/update-general-info', [ScientistController::class, 'updateGeneralInfo'])->name('scientist.updateGeneralInfo');
+
 });

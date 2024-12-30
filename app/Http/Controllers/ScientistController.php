@@ -46,7 +46,7 @@ class ScientistController extends Controller
 
         // Project
         $projects = Project::where('scientist_id', $scientistID)->get();
-        return view('index', compact('projects','educations', 'workExps', 'publishedPapers', 'scientist', 'user'));
+        return view('index', compact('projects', 'educations', 'workExps', 'publishedPapers', 'scientist', 'user'));
     }
 
     public function register(Request $request)
@@ -454,7 +454,7 @@ class ScientistController extends Controller
     {
         $validate = $request->validate([
             'project_title' => 'required|string',
-            'project_start_year' => 'required|integer|min:1900|max:'.date('Y'),
+            'project_start_year' => 'required|integer|min:1900|max:' . date('Y'),
             'project_end_year' => 'required|integer|after_or_equal:start_year',
             'project_level' => 'required|string|max:255',
             'project_position' => 'required|string|max:255'
@@ -462,9 +462,8 @@ class ScientistController extends Controller
 
         $scientistID = Auth::user()->scientist->id;
         $scientist = Scientist::find($scientistID);
-        
-        if ($scientist)
-        {
+
+        if ($scientist) {
             $scientist->projects()->create([
                 'title' => $request->project_title,
                 'start_year' => $request->project_start_year,
@@ -481,11 +480,11 @@ class ScientistController extends Controller
 
     public function exportCV($scientistID)
     {
-        $scientist = Scientist::with(['workExps', 'publishedPapers'])->find($scientistID);
+        $scientist = Scientist::with(['workExps', 'publishedPapers', 'projects'])->find($scientistID);
 
         $master = $scientist->educations()
             ->where('type', 'postgraduate')
-            ->whereHas('postgraduate', function($query){
+            ->whereHas('postgraduate', function ($query) {
                 $query->where('level', 'master');
             })
             ->with('postgraduate')
@@ -494,7 +493,7 @@ class ScientistController extends Controller
 
         $phd = $scientist->educations()
             ->where('type', 'postgraduate')
-            ->whereHas('postgraduate', function($query){
+            ->whereHas('postgraduate', function ($query) {
                 $query->where('level', 'phd');
             })
             ->with('postgraduate')
@@ -507,7 +506,7 @@ class ScientistController extends Controller
             ->take(2)
             ->get()
             ->toArray();
-        
+
         if (!$scientist) {
             return redirect()->back()->withErrors('Scientist not found!');
         }
@@ -538,44 +537,67 @@ class ScientistController extends Controller
         $resume->setValue('scientist.home_phone', $scientist->phone_home);
         $resume->setValue('scientist.mobile_phone', $scientist->phone_mobile);
         $resume->setValue('scientist.fax', $scientist->fax);
-        $resume->setValue('scientist.email', $scientist->email);
+        $resume->setValue('scientist.email', auth()->user()->email);
 
         // Điền thông tin của quá trình đào tạo
-        $resume->setValue('education.system', $undergraduate[0]['undergraduate'][0]['training_system']);
-        $resume->setValue('education.institution', $undergraduate[0]['institution']);
-        $resume->setValue('education.field_of_study', $undergraduate[0]['field_of_study']);
-        $resume->setValue('education.country', $undergraduate[0]['undergraduate'][0]['training_country']);
-        $resume->setValue('education.year', $undergraduate[0]['undergraduate'][0]['graduation_year']);
+        $resume->setValue('education.system', $undergraduate[0]['undergraduate'][0]['training_system'] ?? '');
+        $resume->setValue('education.institution', $undergraduate[0]['institution'] ?? '');
+        $resume->setValue('education.field_of_study', $undergraduate[0]['field_of_study'] ?? '');
+        $resume->setValue('education.country', $undergraduate[0]['undergraduate'][0]['training_country'] ?? '');
+        $resume->setValue('education.year', $undergraduate[0]['undergraduate'][0]['graduation_year'] ?? '');
 
-        $resume->setValue('education.degree_2', $undergraduate[1]['field_of_study']);
-        $resume->setValue('education.year_degree_2', $undergraduate[1]['undergraduate'][0]['graduation_year']);
+        $resume->setValue('education.degree_2', $undergraduate[1]['field_of_study'] ?? '');
+        $resume->setValue('education.year_degree_2', $undergraduate[1]['undergraduate'][0]['graduation_year'] ?? '');
 
-        $resume->setValue('master.major', $master['field_of_study']);
-        $resume->setValue('master.year', $master['postgraduate'][0]['graduation_year']);
-        $resume->setValue('master.institution',$master['institution']);
-        $resume->setValue('master.thesis', $master['postgraduate'][0]['thesis_title']);
+        $resume->setValue('master.major', $master['field_of_study'] ?? '');
+        $resume->setValue('master.year', $master['postgraduate'][0]['graduation_year'] ?? '');
+        $resume->setValue('master.institution', $master['institution'] ?? '');
+        $resume->setValue('master.thesis', $master['postgraduate'][0]['thesis_title'] ?? '');
 
-        $resume->setValue('phd.major',  $phd['field_of_study']);
-        $resume->setValue('phd.year', $phd['postgraduate'][0]['graduation_year']);
-        $resume->setValue('phd.institution', $phd['institution']);
-        $resume->setValue('phd.thesis', $phd['postgraduate'][0]['thesis_title']);
+        $resume->setValue('phd.major', $phd['field_of_study'] ?? '');
+        $resume->setValue('phd.year', $phd['postgraduate'][0]['graduation_year'] ?? '');
+        $resume->setValue('phd.institution', $phd['institution'] ?? '');
+        $resume->setValue('phd.thesis', $phd['postgraduate'][0]['thesis_title'] ?? '');
 
-        
         $workExps = $scientist->workExps;
-        $resume->cloneRow('workExp_row.position', $workExps->count());
-        foreach($workExps as $index => $exp)
-        {
-            $resume->setValue("workExp_row.start_date#". ($index + 1), date('d/m/Y' ,strtotime($exp->start_date)));
-            $resume->setValue("workExp_row.end_date#".($index + 1), $exp->end_date == null ? 'Hiện tại' : date('d/m/Y', strtotime($exp->end_date)));
-            $resume->setValue("workExp_row.institution#".($index + 1), $exp->institution);
-            $resume->setValue("workExp_row.position#".($index + 1), $exp->position);
+
+        if ($workExps->count() == 0) {
+            $resume->setValue("workExp_row.start_date", '');
+            $resume->setValue("workExp_row.end_date", '');
+            $resume->setValue("workExp_row.institution", '');
+            $resume->setValue("workExp_row.position", '');
+        } else {
+            $resume->cloneRow('workExp_row.position', $workExps->count());
+            foreach ($workExps as $index => $exp) {
+                $resume->setValue("workExp_row.start_date#" . ($index + 1), date('d/m/Y', strtotime($exp->start_date)));
+                $resume->setValue("workExp_row.end_date#" . ($index + 1), $exp->end_date == null ? ' - Hiện tại' : ' - '.date('d/m/Y', strtotime($exp->end_date)));
+                $resume->setValue("workExp_row.institution#" . ($index + 1), $exp->institution);
+                $resume->setValue("workExp_row.position#" . ($index + 1), $exp->position);
+            }
         }
 
-        
+        $projects = $scientist->projects;
+        if ($projects->count() == 0) {
+                $resume->setValue("project_row.index" , '');
+                $resume->setValue("project_row.title" , '');
+                $resume->setValue("project_row.start_time" , '');
+                $resume->setValue("project_row.end_time" , '');
+                $resume->setValue("project_row.level" , '');
+                $resume->setValue("project_row.position" , '');
+        } else {
+            $resume->cloneRow('project_row.index', $projects->count());
+            foreach ($projects as $index => $project) {
+                $resume->setValue("project_row.index#" . ($index + 1), $index + 1);
+                $resume->setValue("project_row.title#" . ($index + 1), $project->title);
+                $resume->setValue("project_row.start_time#" . ($index + 1), $project->start_year);
+                $resume->setValue("project_row.end_time#" . ($index + 1), '- '. $project->end_year);
+                $resume->setValue("project_row.level#" . ($index + 1), $project->level);
+                $resume->setValue("project_row.position#" . ($index + 1), $project->position);
+            }
+        }
 
         $publishedPapers = $scientist->publishedPapers; // Lấy danh sách công bố nghiên cứu
         $resume->cloneRow('publishedPaper_row.index', $publishedPapers->count());
-
         foreach ($publishedPapers as $index => $paper) {
             $resume->setValue("publishedPaper_row.index#" . ($index + 1), $index + 1);
             $resume->setValue("publishedPaper_row.title#" . ($index + 1), $paper->title);
@@ -591,4 +613,85 @@ class ScientistController extends Controller
         return response()->download($outputPath)->deleteFileAfterSend(true);
     }
 
+    public function deleteItem($type, $id)
+    {
+        $models = [
+            'publishedPapers' => PublishedPaper::class,
+            'education' => Education::class,
+            'workExp' => WorkExp::class,
+            'project' => Project::class,
+        ];
+
+        if (!array_key_exists($type, $models)) {
+            return response()->json(['message' => 'Invalid type provided.'], 400);
+        }
+
+        $model = $models[$type];
+
+        $item = $model::find($id);
+
+        if (!$item) {
+            return response()->json(['message' => ucfirst($type) . ' not found.'], 400);
+        }
+
+        if ($item->scientist_id !== Auth::user()->scientist->id) {
+            return response()->json(['message' => 'Unauthorized'], 403);
+        }
+
+        $item->delete();
+
+        return response()->json(['message' => 'Delete item successfully.'], 200);
+    }
+
+    public function updateGeneralInfo(Request $request)
+    {
+        $scientistID = Auth::user()->scientist->id;
+        $scientist = Scientist::findOrFail($scientistID);
+
+        $validate = $request->validate([
+            'person_hometown' => 'nullable|string|max:255',
+            'person_ethnicity' => 'nullable|string|max:255',
+            'person_degree' => 'nullable|string|max:255',
+            'person_degree_year_award' => 'nullable|integer|min:1900|max:' . date('Y'),
+            'person_degree_country_award' => 'nullable|string|max:255',
+            'person_sci_title' => 'nullable|string|max:255',
+            'person_year_appointment' => 'nullable|integer|min:1900|max:' . date('Y'),
+            'person_position' => 'nullable|string|max:255',
+            'person_work_unit' => 'nullable|string|max:255',
+            'person_address' => 'nullable|string|max:255',
+            'person_office_phone' => 'nullable|digits_between:8,15',
+            'person_home_phone' => 'nullable|digits_between:8,15',
+            'person_mobile_phone' => 'nullable|digits:10',
+            'person_fax' => 'nullable|digits_between:8,15',
+            'person_citizen_id' => 'nullable|digits:12',
+            'person_date_issue' => 'nullable|date|before:today',
+            'person_place_issue' => 'nullable|string|max:255',
+        ]);
+
+        try {
+            $scientist->update([
+                'hometown' => $request->person_hometown,
+                'ethnicity' => $request->person_ethnicity,
+                'highest_degree' => $request->person_degree,
+                'year_awarded_degree' => $request->person_degree_year_award,
+                'country_awarded_degree' => $request->person_degree_country_award,
+                'scientific_title' => $request->person_sci_title,
+                'year_title_appointment' => $request->person_year_appointment,
+                'position' => $request->person_position,
+                'workplace' => $request->person_work_unit,
+                'address' => $request->person_address,
+                'phone_office' => $request->person_office_phone,
+                'phone_home' => $request->person_home_phone,
+                'phone_mobile' => $request->person_mobile_phone,
+                'fax' => $request->person_fax,
+                'citizen_id' => $request->person_citizen_id,
+                'date_issue' => $request->person_date_issue,
+                'place_issue' => $request->person_place_issue,
+            ]);
+
+            return response()->json(['success' => true, 'message' => 'Update information successfully.'], 200);
+        } catch (\Exception $e) {
+            return response()->json(['success' => false, 'message' => $e]);
+        }
+    }
 }
