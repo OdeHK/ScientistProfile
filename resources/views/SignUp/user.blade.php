@@ -64,7 +64,7 @@
                                     </div>
                                     <div class="row justify-content-center">
                                         <div class="col-md-4 text-center">
-                                            <input type="submit" class="btn btn-primary w-100" value="Sign Up">
+                                            <input type="submit" class="btn btn-primary w-100" value="Next">
                                         </div>
                                     </div>
                                 </form>

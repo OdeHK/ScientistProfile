@@ -488,8 +488,11 @@ class ScientistController extends Controller
                 $query->where('level', 'master');
             })
             ->with('postgraduate')
-            ->first()
-            ->toArray();
+            ->first();
+
+        if ($master) {
+            $masterArr = $master->toArray();
+        }
 
         $phd = $scientist->educations()
             ->where('type', 'postgraduate')
@@ -497,8 +500,11 @@ class ScientistController extends Controller
                 $query->where('level', 'phd');
             })
             ->with('postgraduate')
-            ->first()
-            ->toArray();
+            ->first();
+
+        if ($phd) {
+            $phdArr = $phd->toArray();
+        }
 
         $undergraduate = $scientist->educations()
             ->where('type', 'undergraduate')
@@ -549,15 +555,15 @@ class ScientistController extends Controller
         $resume->setValue('education.degree_2', $undergraduate[1]['field_of_study'] ?? '');
         $resume->setValue('education.year_degree_2', $undergraduate[1]['undergraduate'][0]['graduation_year'] ?? '');
 
-        $resume->setValue('master.major', $master['field_of_study'] ?? '');
-        $resume->setValue('master.year', $master['postgraduate'][0]['graduation_year'] ?? '');
-        $resume->setValue('master.institution', $master['institution'] ?? '');
-        $resume->setValue('master.thesis', $master['postgraduate'][0]['thesis_title'] ?? '');
+        $resume->setValue('master.major', $master != null ? $masterArr['field_of_study'] : '');
+        $resume->setValue('master.year', $master != null ? $masterArr['postgraduate'][0]['graduation_year'] : '');
+        $resume->setValue('master.institution', $master != null ? $masterArr['institution'] : '');
+        $resume->setValue('master.thesis', $master != null ? $masterArr['postgraduate'][0]['thesis_title'] : '');
 
-        $resume->setValue('phd.major', $phd['field_of_study'] ?? '');
-        $resume->setValue('phd.year', $phd['postgraduate'][0]['graduation_year'] ?? '');
-        $resume->setValue('phd.institution', $phd['institution'] ?? '');
-        $resume->setValue('phd.thesis', $phd['postgraduate'][0]['thesis_title'] ?? '');
+        $resume->setValue('phd.major', $phd != null ? $phdArr['field_of_study'] : '');
+        $resume->setValue('phd.year', $phd != null ? $phdArr['postgraduate'][0]['graduation_year'] : '');
+        $resume->setValue('phd.institution', $phd != null ? $phdArr['institution'] : '');
+        $resume->setValue('phd.thesis', $phd != null ? $phdArr['postgraduate'][0]['thesis_title'] : '');
 
         $workExps = $scientist->workExps;
 
@@ -570,7 +576,7 @@ class ScientistController extends Controller
             $resume->cloneRow('workExp_row.position', $workExps->count());
             foreach ($workExps as $index => $exp) {
                 $resume->setValue("workExp_row.start_date#" . ($index + 1), date('d/m/Y', strtotime($exp->start_date)));
-                $resume->setValue("workExp_row.end_date#" . ($index + 1), $exp->end_date == null ? ' - Hiện tại' : ' - '.date('d/m/Y', strtotime($exp->end_date)));
+                $resume->setValue("workExp_row.end_date#" . ($index + 1), $exp->end_date == null ? ' - Hiện tại' : ' - ' . date('d/m/Y', strtotime($exp->end_date)));
                 $resume->setValue("workExp_row.institution#" . ($index + 1), $exp->institution);
                 $resume->setValue("workExp_row.position#" . ($index + 1), $exp->position);
             }
@@ -578,19 +584,19 @@ class ScientistController extends Controller
 
         $projects = $scientist->projects;
         if ($projects->count() == 0) {
-                $resume->setValue("project_row.index" , '');
-                $resume->setValue("project_row.title" , '');
-                $resume->setValue("project_row.start_time" , '');
-                $resume->setValue("project_row.end_time" , '');
-                $resume->setValue("project_row.level" , '');
-                $resume->setValue("project_row.position" , '');
+            $resume->setValue("project_row.index", '');
+            $resume->setValue("project_row.title", '');
+            $resume->setValue("project_row.start_time", '');
+            $resume->setValue("project_row.end_time", '');
+            $resume->setValue("project_row.level", '');
+            $resume->setValue("project_row.position", '');
         } else {
             $resume->cloneRow('project_row.index', $projects->count());
             foreach ($projects as $index => $project) {
                 $resume->setValue("project_row.index#" . ($index + 1), $index + 1);
                 $resume->setValue("project_row.title#" . ($index + 1), $project->title);
                 $resume->setValue("project_row.start_time#" . ($index + 1), $project->start_year);
-                $resume->setValue("project_row.end_time#" . ($index + 1), '- '. $project->end_year);
+                $resume->setValue("project_row.end_time#" . ($index + 1), '- ' . $project->end_year);
                 $resume->setValue("project_row.level#" . ($index + 1), $project->level);
                 $resume->setValue("project_row.position#" . ($index + 1), $project->position);
             }
